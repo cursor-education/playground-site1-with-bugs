@@ -1,3 +1,6 @@
+!.keep
+
 shared/node_modules
 shared/.sass-cache
 shared/web/components
+shared/web/build
