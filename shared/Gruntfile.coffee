@@ -36,6 +36,16 @@ module.exports = (grunt) ->
                     ext:    '.css'
                 ]
 
+        'coffee':
+            options:
+                bare: true
+                join: false
+            all:
+                src: [
+                    'web/assets/js/all.coffee'
+                ]
+                dest: 'web/build/all.js'
+
         'watch':
             css:
                 files: [
@@ -43,15 +53,27 @@ module.exports = (grunt) ->
                     'web/assets/styles/**/*.scss'
                 ]
                 tasks: ['build-css']
+            js:
+                files: [
+                    'Gruntfile.coffee'
+                    'web/assets/js/**/*.coffee'
+                ]
+                tasks: ['build-js']
     )
 
     grunt.registerTask 'build-all', [
         'build-css'
+        'build-js'
     ]
 
     grunt.registerTask 'build-css', [
         'clean:before-css'
         'sass'
+    ]
+
+    grunt.registerTask 'build-js', [
+        'clean:before-js'
+        'coffee'
     ]
 
     if config.debug.enabled
