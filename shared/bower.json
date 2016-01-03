@@ -1,6 +1,0 @@
-{
-  "name": "cursor-education-qa-playground",
-  "dependencies": {
-    "Materialize": "materialize#~0.97.5"
-  }
-}

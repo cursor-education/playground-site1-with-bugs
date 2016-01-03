@@ -1,6 +1,6 @@
 !.keep
 
-shared/node_modules
-shared/.sass-cache
-shared/web/components
-shared/web/build
+site/node_modules
+site/.sass-cache
+site/web/components
+site/web/build

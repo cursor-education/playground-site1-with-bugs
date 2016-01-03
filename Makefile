@@ -22,14 +22,14 @@ ssh:
 	docker exec -ti ${CONTAINER_NAME} bash
 
 configure:
-	docker exec -ti ${CONTAINER_NAME} /bin/sh -c 'cd ${HOME}/shared/ && bower install --allow-root --config.interactive=false'
+	docker exec -ti ${CONTAINER_NAME} bower install --allow-root --config.interactive=false
 	docker exec -ti ${CONTAINER_NAME} npm install
 
 assets:
-	docker exec -ti ${CONTAINER_NAME} /bin/sh -c 'cd ${HOME}/shared/ && grunt'
+	docker exec -ti ${CONTAINER_NAME} grunt
 
 server: server-stop
-	docker exec ${CONTAINER_NAME} /bin/sh -c 'nohup http-server ${HOME}/shared/web -a 0.0.0.0 >/dev/null 2>&1 &'
+	docker exec ${CONTAINER_NAME} /bin/sh -c 'nohup http-server web/ -a 0.0.0.0 >/dev/null 2>&1 &'
 
 server-stop:
 	docker exec -ti ${CONTAINER_NAME} /bin/sh -c 'killall node || true'

@@ -23,5 +23,4 @@ RUN true \
     && npm install -g grunt-cli \
     && npm install -g http-server
 
-ENV home /shared
-WORKDIR ${home}
+WORKDIR /shared/site

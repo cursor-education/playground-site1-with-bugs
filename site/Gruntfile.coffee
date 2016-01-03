@@ -42,7 +42,9 @@ module.exports = (grunt) ->
                 join: false
             all:
                 src: [
-                    'web/assets/js/all.coffee'
+                    'web/assets/js/app.coffee'
+                    'web/assets/js/app.modules.coffee'
+                    'web/assets/js/app.routes.coffee'
                 ]
                 dest: 'web/build/all.js'
 
