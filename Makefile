@@ -28,6 +28,9 @@ configure:
 assets:
 	docker exec -ti ${CONTAINER_NAME} grunt
 
+assets-watch:
+	docker exec -ti ${CONTAINER_NAME} grunt watch-all
+
 server: server-stop
 	docker exec ${CONTAINER_NAME} /bin/sh -c 'nohup http-server web/ -a 0.0.0.0 >/dev/null 2>&1 &'
 
