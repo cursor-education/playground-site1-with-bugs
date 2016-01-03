@@ -1,8 +1,0 @@
-@charset "UTF-8";
-
-@import "../../components/Materialize/sass/components/_color.scss";
-
-$primary-color: color("deep-orange", "lighten-1") !default;
-$secondary-color: color("blue-grey", "lighten-2") !default;
-
-@import "../../components/Materialize/sass/materialize.scss";
