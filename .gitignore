@@ -2,5 +2,5 @@
 
 site/node_modules
 site/.sass-cache
-site/web/components
+site/web/assets/vendor
 site/web/build
