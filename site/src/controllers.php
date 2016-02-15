@@ -89,7 +89,18 @@ $app->post('/add-apteka', function (Request $request) use ($app) {
 });
 
 $app->get('/manage-aptekas', function () use ($app) {
-    return $app['twig']->render('manage-aptekas/index.html.twig');
+    $user = $app['twig']->getGlobals()['user'];
+
+    $aptekas = [];
+    foreach ($app['db']->aptekas->find() as $apteka) {
+        if (@$apteka['owner'] === $user['username']) {
+            $aptekas[] = $apteka;
+        }
+    }
+
+    return $app['twig']->render('manage-aptekas/index.html.twig', [
+        'aptekas' => $aptekas,
+    ]);
 });
 
 $app->get('/faq', function () use ($app) {
