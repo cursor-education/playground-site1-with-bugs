@@ -1,3 +1,4 @@
+{% spaceless %}
 <nav class="navbar navbar-default navbar-fixed-top">
   <div class="container">
     
@@ -8,9 +9,7 @@
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li class="active"><a href="/">Home</a></li>
-        <li><a href="/faq">FAQ</a></li>
-        <li><a href="/disclaimer">Disclaimer</a></li>
+        <li {% if pageName == "landing" %}class="active"{% endif %}><a href="/">Home</a></li>
 
         {% if user|default(false) and isadmin %}
         <li class="dropdown">
@@ -21,6 +20,9 @@
           </ul>
         </li>
         {% endif %}
+
+        <li {% if pageName == "faq" or pageName == "disclaimer" %}class="active"{% endif %}><a href="/faq">FAQ</a></li>
+        <li {% if pageName == "disclaimer" %}class="active"{% endif %}><a href="/disclaimer">Disclaimer</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         {% if user|default(false) %}
@@ -37,3 +39,4 @@
 
   </div>
 </nav>
+{% endspaceless %}
