@@ -10,26 +10,9 @@
 
   <h1>Manage pharmacies</h1>
 
-  <div class="top50">
-    {% for pharmaciesRows in pharmacies|batch(4, '') %}
-    <div class="row">
-
-      {% for pharmacy in pharmaciesRows %}
-      {% if pharmacy %}
-        <div class="col-md-4">
-            <a href="/pharmacy/manage/{{ pharmacy._id }}">
-            <div class="panel panel-default">
-              <div class="panel-heading">{{ pharmacy.name }}</div>
-              <div class="panel-body">
-                {{ pharmacy.description }}
-              </div>
-            </div>
-            </a>
-        </div>
-      {% endif %}
-      {% endfor %}
-    
-    </div>
-    {% endfor %}
-  </div>
+  {% if not pharmacies|length %}
+    {% include 'pharmacy-manage/_empty.html.twig' %}
+  {% else %}
+    {% include 'pharmacy-manage/_list.html.twig' %}
+  {% endif %}
 {% endblock %}

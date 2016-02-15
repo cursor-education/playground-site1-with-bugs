@@ -55,6 +55,7 @@ $app->before(function (Request $request, Application $app) {
     }
     $app['twig']->addGlobal('user', $user);
     $app['twig']->addGlobal('isadmin', $user && !empty($user['isadmin']));
+    $app['twig']->addGlobal('ismanager', $user && !empty($user['ismanager']));
 
 }, Application::EARLY_EVENT);
 
