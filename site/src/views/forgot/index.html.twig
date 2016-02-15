@@ -1,33 +1,40 @@
 {% extends "layout.html.twig" %}
 
-{% set pageName = 'login' %}
+{% set pageName = 'forgot' %}
 
 {% block content %}
+  <ul class="breadcrumb">
+    <li><a href="/">Home</a></li>
+    <li class="active">Forgot password</li>
+  </ul>
 
-<br/><br/>
+  <div class="row top50">
+    <div class="col-md-6 col-md-offset-3">
+      <form class="form-horizontal" method="POST" action="/forgot">
+        <fieldset>
+          <legend>Forgot your password?</legend>
 
-<div class="row">
-  <div class="col-md-6 col-md-offset-3">
-    <form class="form-horizontal" method="POST" action="/login">
-      <fieldset>
-        <legend>Forgot your password?</legend>
-
-        <div class="form-group" class="required">
-          <label for="inputUsername" class="col-lg-2 control-label">Username</label>
-          <div class="col-lg-10">
-            <input type="text" class="form-control" id="inputUsername" placeholder="username" required="true">
+          {% if alert %}
+          <div class="alert alert-dismissible alert-{{ alert }}">
+            {{ alert_message }}
           </div>
-        </div>
+          {% endif %}
 
-        <div class="form-group">
-          <div class="col-lg-10 col-lg-offset-2">
-            <button type="reset" class="btn btn-default">Cancel</button>
-            <button type="submit" class="btn btn-primary">Submit</button>
+          <div class="form-group" class="required">
+            <label class="col-lg-2 control-label">Username</label>
+            <div class="col-lg-10">
+              <input type="text" class="form-control" name="username" required="true" value="{{ username }}">
+            </div>
           </div>
-        </div>
-      </fieldset>
-    </form>
+
+          <div class="form-group">
+            <div class="col-lg-10 col-lg-offset-2">
+              <button type="reset" class="btn btn-default">Cancel</button>
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+          </div>
+        </fieldset>
+      </form>
+    </div>
   </div>
-</div>
-
 {% endblock %}

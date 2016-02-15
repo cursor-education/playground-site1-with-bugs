@@ -7,6 +7,8 @@ $app->register(new ConfigServiceProvider(sprintf($configFilePattern, $env)));
 
 $app->register(new Silex\Provider\UrlGeneratorServiceProvider());
 
+$app->register(new Silex\Provider\SessionServiceProvider());
+
 $app->register(new Silex\Provider\HttpCacheServiceProvider(), array(
     'http_cache.cache_dir' => ROOT_DIR . '/cache'
 ));

@@ -1,0 +1,15 @@
+{% extends "layout.html.twig" %}
+
+{% set pageName = 'faq' %}
+
+{% block content %}
+  <div class="row top15">
+    <div class="col-md-8 col-md-offset-2">
+      <h1>FAQ</h1>
+
+      <div class="top15">
+        {{ lipsum.sentences(5, 'p')|raw }}
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -9,11 +9,13 @@
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li class="active"><a href="/">Home</a></li>
+        <li><a href="/faq">FAQ</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         {% if user|default(false) %}
-          <li><a href="/forgot">My profile</a></li>
-          <li><a href="/forgot">Change password</a></li>
+          <li><a href="/profile">My profile</a></li>
+          <li><a href="/forgot-step2?username={{ user.username }}">Change password</a></li>
+          <li><a href="/logout">Logout</a></li>
         {% else %}
           <li><a href="/login">Login</a></li>
           <li><a href="/signup">Sign Up</a></li>
