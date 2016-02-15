@@ -50,7 +50,7 @@ RUN curl --silent --location https://rpm.nodesource.com/setup | bash - \
 RUN printf "\n" | pecl install mongo mongodb \
  && echo "extension=mongo.so" > /etc/php.d/mongo.ini \
  && echo "extension=mongodb.so" >> /etc/php.d/mongo.ini \
- && ll /usr/lib64/php/modules/ | grep mongo \
+ && ls -la /usr/lib64/php/modules/ | grep mongo \
  && php -m | grep mongo
 
 ADD ./environment/mongodb/mongodb.repo /etc/yum.repos.d/mongodb.repo
