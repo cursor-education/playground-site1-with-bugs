@@ -3,7 +3,7 @@
 {% set pageName = 'landing' %}
 
 {% block content %}
-  {% if not pharmacies.count() %}
+  {% if not pharmacies|length %}
     {% include 'landing/_empty.html.twig' %}
   {% else %}
     {% include 'landing/_list.html.twig' %}

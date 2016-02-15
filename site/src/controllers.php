@@ -59,9 +59,20 @@ $app->before(function (Request $request, Application $app) {
 }, Application::EARLY_EVENT);
 
 // @route landing page
-$app->match('/', function () use ($app) {
+$app->match('/', function (Request $request) use ($app) {
+    $pharmacies = $app['db']->pharmacies->find();
+    $pharmacies = iterator_to_array($pharmacies);
+
+    $perPage = 6*3;
+    $page = $request->get('page', 1);
+    $pages = ceil(count($pharmacies) / $perPage);
+    $offset = ($page - 1) * $perPage;
+    $pharmacies = array_slice($pharmacies, $offset, $perPage);
+
     return $app['twig']->render('landing/index.html.twig', array(
-        'pharmacies' => $app['db']->pharmacies->find(),
+        'pharmacies' => $pharmacies,
+        'page' => $page,
+        'pages' => $pages,
     ));
 })
 ->bind('landing');
