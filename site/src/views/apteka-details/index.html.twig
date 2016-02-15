@@ -1,7 +1,6 @@
 {% extends "layout.html.twig" %}
 
-{% set pageName = 'landing' %}
-{% set user = true %}
+{% set pageName = 'apteka-details' %}
 
 {% block content %}
   <ul class="breadcrumb">
@@ -18,13 +17,13 @@
   </ul>
   <div id="myTabContent" class="tab-content">
     <div class="tab-pane fade active in" id="details">
-      {% include 'details/_tab_details.html.twig' %}
+      {% include 'apteka-details/_tab_details.html.twig' %}
     </div>
     <div class="tab-pane fade" id="managers">
-      {% include 'details/_tab_managers.html.twig' %}
+      {% include 'apteka-details/_tab_managers.html.twig' %}
     </div>
     <div class="tab-pane fade" id="products">
-      {% include 'details/_tab_products.html.twig' %}
+      {% include 'apteka-details/_tab_products.html.twig' %}
     </div>
   </div>
 

@@ -27,7 +27,17 @@ $app->match('/debug', function () use ($app) {
     }
     var_dump('<br><br>');
 
+    echo '<h2>Users:</h2>';
+
     foreach ($db->users->find() as $key => $value) {
+        var_dump($key, $value);
+    }
+
+    var_dump('<br><br>');
+    
+    echo '<h2>Aptekas:</h2>';
+
+    foreach ($db->aptekas->find() as $key => $value) {
         var_dump($key, $value);
     }
 
@@ -42,8 +52,45 @@ $app->before(function (Request $request, Application $app) {
         $user = $app['db']->users->findOne(['username' => $username]);
     }
     $app['twig']->addGlobal('user', $user);
+    $app['twig']->addGlobal('isadmin', $user && !empty($user['isadmin']));
 
 }, Application::EARLY_EVENT);
+
+$app->get('/add-apteka', function () use ($app) {
+    $response = $app['twig']->render('add-apteka/index.html.twig', array(
+        'alert' => $app['session']->get('alert'),
+        'alert_message' => $app['session']->get('alert-message'),
+    ));
+
+    $app['session']->remove('alert');
+    $app['session']->remove('alert-message');
+
+    return $response;
+});
+
+$app->post('/add-apteka', function (Request $request) use ($app) {
+    $name = $request->get('name');
+    $params = $request->request->all();
+
+    $apteka = $app['db']->aptekas->findOne(['name' => $name]);
+    if ($apteka) {
+        $app['session']->set('alert', 'danger');
+        $app['session']->set('alert-message', 'Apteka with such name already registered.');
+
+        return $app->redirect('/add-apteka');
+    }
+
+    $app['db']->aptekas->insert($params);
+
+    $app['session']->set('alert', 'success');
+    $app['session']->set('alert-message', 'Well done! You have successfully add a new apteka.');
+
+    return $app->redirect('/add-apteka');
+});
+
+$app->get('/manage-aptekas', function () use ($app) {
+    return $app['twig']->render('manage-aptekas/index.html.twig');
+});
 
 $app->get('/faq', function () use ($app) {
     return $app['twig']->render('faq/index.html.twig');
@@ -213,12 +260,21 @@ $app->post('/forgot-step2', function (Request $request) use ($app) {
 // @route landing page
 $app->match('/', function () use ($app) {
     return $app['twig']->render('landing/index.html.twig', array(
+        'aptekas' => $app['db']->aptekas->find(),
     ));
 })
 ->bind('landing');
 
-$app->match('/apteka/{id}', function () use ($app) {
-    return $app['twig']->render('details/index.html.twig');
+$app->match('/apteka/{id}', function ($id) use ($app) {
+    $apteka = $app['db']->aptekas->findOne(['_id' => new MongoId($id)]);
+
+    if (!$apteka) {
+        return $app->redirect('/');
+    }
+
+    return $app['twig']->render('apteka-details/index.html.twig', [
+        'apteka' => $apteka,
+    ]);
 });
 
 //

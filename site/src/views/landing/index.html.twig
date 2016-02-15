@@ -18,9 +18,33 @@
 
       <br/>
 
-      {% include 'landing/_row.html.twig' %}  
-      {% include 'landing/_row.html.twig' %}  
-      {% include 'landing/_row.html.twig' %}  
+      {% for aptekaRows in aptekas|batch(4, '') %}
+        <div class="row">
+          {% for apteka in aptekaRows %}
+          {% if apteka %}
+          <div class="col-md-3">
+            <div class="panel panel-default">
+              <div class="panel-heading">Apteka "{{ apteka.name }}"</div>
+              <div class="panel-body">
+                <img class="center-block" src="http://lorempixel.com/200/150/abstract/?{{ lipsum.word() }}">
+                
+                <p class="content top10">
+                  {{ apteka.description }}
+                </p>
+
+              </div>
+              <div class="panel-footer">
+                <p class="content top10">
+                  <span>Products <span class="badge">20</span></span>
+                </p>
+                <a href="/apteka/{{ apteka._id }}" class="btn btn-default"><span class="glyphicon glyphicon-th-list"> Details</a>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+      {% endfor %}
 
       <ul class="pagination">
         <li class="disabled"><a href="#">&laquo;</a></li>
