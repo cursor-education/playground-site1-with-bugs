@@ -32,9 +32,9 @@
               {% if user.ismanager|default(false) %}manager&nbsp;{% endif %}
             </td>
             <td>
-              <a href="/users/remove/{{ user._id }}" class="btn btn-xs btn-danger">Remove</a>
-
               {% if not user.isadmin|default(false) %}
+                <a href="/users/remove/{{ user._id }}" class="btn btn-xs btn-danger">Remove</a>
+
                 {% if user.ismanager|default(false) %}
                   <a href="/users/remove-manager-role/{{ user._id }}" class="btn btn-xs btn-danger">Remove manager role</a>
                 {% else %}

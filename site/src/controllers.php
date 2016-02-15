@@ -326,7 +326,7 @@ $app->post('/forgot/step2', function (Request $request) use ($app) {
     return $app->redirect('/login?username='.$username);
 });
 
-$app->match('/pharmacy/{id}', function ($id) use ($app) {
+$app->get('/pharmacy/{id}', function ($id) use ($app) {
     $pharmacy = $app['db']->pharmacies->findOne(['_id' => new MongoId($id)]);
 
     if (!$pharmacy) {
@@ -336,6 +336,42 @@ $app->match('/pharmacy/{id}', function ($id) use ($app) {
     return $app['twig']->render('pharmacy-details/index.html.twig', [
         'pharmacy' => $pharmacy,
     ]);
+});
+
+$app->post('/pharmacy/{id}', function (Request $request, $id) use ($app) {
+    $params = $request->request->all();
+
+    $pharmacySearchConditions = ['_id' => new MongoId($id)];
+    $pharmacy = $app['db']->pharmacies->findOne($pharmacySearchConditions);
+
+    if (!$pharmacy) {
+        return $app->redirect('/');
+    }
+
+    $pharmacy = array_merge($pharmacy, $params);
+    $app['db']->pharmacies->findAndModify($pharmacySearchConditions, $pharmacy);
+
+    return $app->redirect('/pharmacy/'.$id);
+});
+
+$app->post('/pharmacy/{id}/products/add', function (Request $request, $id) use ($app) {
+    $params = $request->request->all();
+
+    $pharmacySearchConditions = ['_id' => new MongoId($id)];
+    $pharmacy = $app['db']->pharmacies->findOne($pharmacySearchConditions);
+
+    if (!$pharmacy) {
+        return $app->redirect('/');
+    }
+
+    if (!isset($pharmacy['products'])) {
+        $pharmacy['products'] = array();
+    }
+    $pharmacy['products'][] = $params;
+
+    $app['db']->pharmacies->findAndModify($pharmacySearchConditions, $pharmacy);
+
+    return $app->redirect('/pharmacy/'.$id);
 });
 
 
@@ -396,6 +432,12 @@ $app->get('/users/manage', function (Request $request) use ($app) {
 
 // @route GET /users/remove
 $app->get('/users/remove/{id}', function (Request $request, $id) use ($app) {
+    $user = $app['db']->users->findOne(['_id' => new MongoId($id)]);
+
+    if ($user['isadmin']) {
+        return $app->redirect('/users/manage');
+    }
+
     $a = $app['db']->users->remove(['_id' => new MongoId($id)]);
     return $app->redirect('/users/manage');
 });
@@ -403,6 +445,11 @@ $app->get('/users/remove/{id}', function (Request $request, $id) use ($app) {
 // @route GET /users/add-manager-role
 $app->get('/users/add-manager-role/{id}', function (Request $request, $id) use ($app) {
     $user = $app['db']->users->findOne(['_id' => new MongoId($id)]);
+
+    if ($user['isadmin']) {
+        return $app->redirect('/users/manage');
+    }
+
     $user['ismanager'] = true;
     
     $app['db']->users->findAndModify(['username' => $user['username']], $user);

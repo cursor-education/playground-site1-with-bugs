@@ -4,8 +4,10 @@
     <input type="text" class="form-control">
   </div>
   <div class="col-lg-3">
-    <a href="#" class="btn btn-default">View</a>
-    <a href="#" class="btn btn-default">Edit</a>
-    <a href="#" class="btn btn-danger">Delete</a>
+    {% if isadmin %}
+      <a href="#" class="btn btn-default">View</a>
+      <a href="#" class="btn btn-default">Edit</a>
+      <a href="#" class="btn btn-danger">Delete</a>
+    {% endif %}
   </div>
 </div>

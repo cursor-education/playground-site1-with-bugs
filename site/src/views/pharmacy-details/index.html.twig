@@ -8,22 +8,37 @@
     <li class="active">Pharmacy</li>
   </ul>
 
-  <h1>Pharmacy "{{ lipsum.word() }}"</h1>
+  <h1>Pharmacy "{{ pharmacy.name }}"</h1>
 
-  <ul class="nav nav-tabs top15">
+  <ul class="nav nav-tabs top30">
     <li class="active"><a href="#details" data-toggle="tab" aria-expanded="true">Details</a></li>
-    <li class=""><a href="#managers" data-toggle="tab" aria-expanded="false">Managers</a></li>
-    <li class=""><a href="#products" data-toggle="tab" aria-expanded="false">Products</a></li>
+    <li><a href="#managers" data-toggle="tab" aria-expanded="false">Managers</a></li>
+    {% if isadmin %}
+      <li><a href="#add-managers" data-toggle="tab" aria-expanded="false">Add Managers</a></li>
+    {% endif %}
+
+    <li><a href="#products" data-toggle="tab" aria-expanded="false">Products <span class="badge">{{ pharmacy.products|default([])|length }}</span></a></li>
+
+    {% if isadmin or ismanager %}
+      <li><a href="#add-products" data-toggle="tab" aria-expanded="false">Add Products</a></li>
+    {% endif %}
   </ul>
-  <div id="myTabContent" class="tab-content">
+
+  <div class="tab-content">
     <div class="tab-pane fade active in" id="details">
       {% include 'pharmacy-details/_tab_details.html.twig' %}
     </div>
     <div class="tab-pane fade" id="managers">
       {% include 'pharmacy-details/_tab_managers.html.twig' %}
     </div>
+    <div class="tab-pane fade" id="add-managers">
+      add-managers
+    </div>
     <div class="tab-pane fade" id="products">
-      {% include 'pharmacy-details/_tab_products.html.twig' %}
+      {% include 'pharmacy-details/_tab.products.html.twig' %}
+    </div>
+    <div class="tab-pane fade" id="add-products">
+      {% include 'pharmacy-details/_tab.products.add.html.twig' %}
     </div>
   </div>
 

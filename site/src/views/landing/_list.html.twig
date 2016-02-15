@@ -27,7 +27,7 @@
               </div>
               <div class="panel-footer">
                 <p class="content top10">
-                  <span>Products <span class="badge">?</span></span>
+                  <span>Products <span class="badge">{{ pharmacy.products|default([])|length }}</span></span>
                 </p>
                 <a href="/pharmacy/{{ pharmacy._id }}" class="btn btn-default"><span class="glyphicon glyphicon-th-list"> Details</a>
               </div>
