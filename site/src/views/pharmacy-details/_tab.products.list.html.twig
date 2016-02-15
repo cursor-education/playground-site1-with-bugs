@@ -1,0 +1,27 @@
+{% for product in pharmacy.products|default([]) %}
+<div class="form-group">
+  <label class="col-lg-2 control-label">{{ product.name }}</label>
+
+  <div class="col-lg-4">
+    {{ product.description }}
+  </div>
+
+  <div class="col-lg-1">
+    <input disabled type="text" class="form-control" value="{{ product.count }}" />
+  </div>
+
+  <div class="col-lg-2">
+    {{ product.last_buy|default('never') }}
+  </div>
+
+  <div class="col-lg-3">
+    <a href="/pharmacy/{{ pharmacy._id }}/products/{{ product.id|default('') }}/buy" type="button" class="btn btn-default">
+      <span class="glyphicon glyphicon-shopping-cart" aria-hidden="true"></span> Buy
+    </a>
+
+    <a href="/pharmacy/{{ pharmacy._id }}/products/{{ product.id|default('') }}/order" type="button" class="btn btn-default">
+      <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Order
+    </a>
+  </div>
+</div>
+{% endfor %}

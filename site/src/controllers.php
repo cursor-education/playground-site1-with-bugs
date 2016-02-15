@@ -72,6 +72,7 @@ $app->match('/', function (Request $request) use ($app) {
 
     return $app['twig']->render('landing/index.html.twig', array(
         'pharmacies' => $pharmacies,
+        'orders' => $app['session']->get('orders'),
         'page' => $page,
         'pages' => $pages,
     ));
@@ -333,9 +334,16 @@ $app->get('/pharmacy/{id}', function ($id) use ($app) {
         return $app->redirect('/');
     }
 
-    return $app['twig']->render('pharmacy-details/index.html.twig', [
+    $response = $app['twig']->render('pharmacy-details/index.html.twig', array(
         'pharmacy' => $pharmacy,
-    ]);
+        'alert' => $app['session']->get('alert'),
+        'alert_message' => $app['session']->get('alert-message'),
+    ));
+
+    $app['session']->remove('alert');
+    $app['session']->remove('alert-message');
+
+    return $response;
 });
 
 $app->post('/pharmacy/{id}', function (Request $request, $id) use ($app) {
@@ -367,11 +375,82 @@ $app->post('/pharmacy/{id}/products/add', function (Request $request, $id) use (
     if (!isset($pharmacy['products'])) {
         $pharmacy['products'] = array();
     }
+
+    $params['id'] = time() + rand(0,99999);
     $pharmacy['products'][] = $params;
 
     $app['db']->pharmacies->findAndModify($pharmacySearchConditions, $pharmacy);
 
     return $app->redirect('/pharmacy/'.$id);
+});
+
+$app->get('/pharmacy/{pharmacyId}/products/{productId}/order', function (Request $request, $pharmacyId, $productId) use ($app) {
+    $pharmacySearchConditions = ['_id' => new MongoId($pharmacyId)];
+    $pharmacy = $app['db']->pharmacies->findOne($pharmacySearchConditions);
+
+    if (!$pharmacy) {
+        return $app->redirect('/');
+    }
+
+    foreach ($pharmacy['products'] as &$product) {
+        if (@$product['id'] == $productId) {
+            $product['count'] += 10;
+            break;
+        }
+    }
+
+    $app['db']->pharmacies->findAndModify($pharmacySearchConditions, $pharmacy);
+
+    return $app->redirect('/pharmacy/'.$pharmacyId);
+});
+
+$app->get('/pharmacy/{pharmacyId}/products/{productId}/buy', function (Request $request, $pharmacyId, $productId) use ($app) {
+    $pharmacySearchConditions = ['_id' => new MongoId($pharmacyId)];
+    $pharmacy = $app['db']->pharmacies->findOne($pharmacySearchConditions);
+
+    if (!$pharmacy) {
+        return $app->redirect('/');
+    }
+
+    $productToBuy = null;
+
+    foreach ($pharmacy['products'] as $product) {
+        if (@$product['id'] == $productId) {
+            $productToBuy = $product;
+            break;
+        }
+    }
+
+    if ($productToBuy) {
+        $app['session']->set('alert', 'success');
+        $app['session']->set('alert-message', 'Well done! You have just buy the "'.$productToBuy['name'].'" product.');        
+
+        $productToBuy['count'] -= 1;
+        $productToBuy['last_buy'] = date('Y-m-d H:i:s');
+
+        foreach ($pharmacy['products'] as &$product) {
+            if (@$product['id'] == $productId) {
+                $product = $productToBuy;
+                break;
+            }
+        }
+
+        $app['db']->pharmacies->findAndModify($pharmacySearchConditions, $pharmacy);
+
+        $orders = $app['session']->get('orders');
+        if (empty($orders)) {
+            $orders = array();
+        }
+        $orders[] = array(
+            'pharmacyId' => $pharmacyId,
+            'productId' => $productId,
+            'product' => $productToBuy,
+        );
+
+        $app['session']->set('orders', $orders);
+    }
+
+    return $app->redirect('/pharmacy/'.$pharmacyId);
 });
 
 
