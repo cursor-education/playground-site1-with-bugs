@@ -1,0 +1,17 @@
+{% extends "layout.html.twig" %}
+
+{% set pageName = 'faq' %}
+
+{% block content %}
+  <div class="row top15">
+    <div class="col-md-8 col-md-offset-2">
+      <div class="top15">
+        {% if random(100) < 5 %}
+            <img class="center-block" src="http://lorempixel.com/400/200/cats/" />
+        {% else %}
+            <img class="center-block" src="https://roymarkcorrales.files.wordpress.com/2013/06/blog-and-comment-disclaimer-page-001.jpg?w=650" />
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

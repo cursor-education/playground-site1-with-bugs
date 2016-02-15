@@ -3,30 +3,45 @@
 {% set pageName = 'profile' %}
 
 {% block content %}
+{% spaceless %}
+
   <ul class="breadcrumb">
     <li><a href="/">Home</a></li>
     <li class="active">My profile</li>
   </ul>
 
-  <div class="row top50">
-    <div class="col-md-8 col-md-offset-2">
-        <h2>#{{ user._id }}</h2>
+  <div class="panel panel-default">
+    <div class="panel-heading">#{{ user._id }}</div>
+    <div class="panel-body">
+      <p>
+        <b>id:</b> {{ user._id }}
+      </p>
 
-        <div class="row">
-            <b>username:</b> {{ user.username }}
-        </div>
+      <p>
+        <b>username:</b> {{ user.username }}
+      </p>
 
-        <div class="row">
-            <b>phone:</b> {{ user.phone }}
-        </div>
+      <p>
+        <b>phone:</b> {{ user.phone }}
+      </p>
 
-        <div class="row">
-            <b>first name:</b> {{ user.firstname }}
-        </div>
+      <p>
+        <b>first name:</b> {{ user.firstname }}
+      </p>
 
-        <div class="row">
-            <b>last name:</b> {{ user.lastname }}
-        </div>
+      <p>
+        <b>last name:</b> {{ user.lastname }}
+      </p>
+
+      <p>
+        <b>registered date:</b> {{ user.signup_date|default('unknown') }}
+      </p>
+
+      <p>
+        <b>last signup date:</b> {{ user.signup_last_date|default('unknown') }}
+      </p>
     </div>
   </div>
+
+{% endspaceless %}
 {% endblock %}

@@ -4,6 +4,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use \Jenssegers\Agent\Agent as Agent;
+use Laracasts\Flash\FlashServiceProvider as Flash;
 
 $app->match('/phpinfo', function () use ($app) {
     phpinfo();
@@ -35,9 +37,9 @@ $app->match('/debug', function () use ($app) {
 
     var_dump('<br><br>');
     
-    echo '<h2>Aptekas:</h2>';
+    echo '<h2>Pharmacies:</h2>';
 
-    foreach ($db->aptekas->find() as $key => $value) {
+    foreach ($db->pharmacies->find() as $key => $value) {
         var_dump($key, $value);
     }
 
@@ -56,8 +58,26 @@ $app->before(function (Request $request, Application $app) {
 
 }, Application::EARLY_EVENT);
 
-$app->get('/add-apteka', function () use ($app) {
-    $response = $app['twig']->render('add-apteka/index.html.twig', array(
+// @route landing page
+$app->match('/', function () use ($app) {
+    return $app['twig']->render('landing/index.html.twig', array(
+        'pharmacies' => $app['db']->pharmacies->find(),
+    ));
+})
+->bind('landing');
+
+// @route GET /faq
+$app->get('/faq', function () use ($app) {
+    return $app['twig']->render('faq/index.html.twig');
+});
+
+// @route GET /disclaimer
+$app->get('/disclaimer', function () use ($app) {
+    return $app['twig']->render('disclaimer/index.html.twig');
+});
+
+$app->get('/pharmacy/add', function () use ($app) {
+    $response = $app['twig']->render('pharmacy-add/index.html.twig', array(
         'alert' => $app['session']->get('alert'),
         'alert_message' => $app['session']->get('alert-message'),
     ));
@@ -68,49 +88,50 @@ $app->get('/add-apteka', function () use ($app) {
     return $response;
 });
 
-$app->post('/add-apteka', function (Request $request) use ($app) {
+$app->post('/pharmacy/add', function (Request $request) use ($app) {
     $name = $request->get('name');
     $params = $request->request->all();
 
-    $apteka = $app['db']->aptekas->findOne(['name' => $name]);
-    if ($apteka) {
+    $pharmacy = $app['db']->pharmacies->findOne(['name' => $name]);
+    if ($pharmacy) {
         $app['session']->set('alert', 'danger');
-        $app['session']->set('alert-message', 'Apteka with such name already registered.');
+        $app['session']->set('alert-message', 'Pharmacy with such name already registered.');
 
-        return $app->redirect('/add-apteka');
+        return $app->redirect('/pharmacy/add');
     }
 
-    $app['db']->aptekas->insert($params);
+    $app['db']->pharmacies->insert($params);
 
     $app['session']->set('alert', 'success');
-    $app['session']->set('alert-message', 'Well done! You have successfully add a new apteka.');
+    $app['session']->set('alert-message', 'Well done! You have successfully add a new pharmacy.');
 
-    return $app->redirect('/add-apteka');
+    return $app->redirect('/pharmacy/add');
 });
 
-$app->get('/manage-aptekas', function () use ($app) {
+$app->get('/pharmacy/manage', function () use ($app) {
     $user = $app['twig']->getGlobals()['user'];
 
-    $aptekas = [];
-    foreach ($app['db']->aptekas->find() as $apteka) {
-        if (@$apteka['owner'] === $user['username']) {
-            $aptekas[] = $apteka;
+    $pharmacies = [];
+    foreach ($app['db']->pharmacies->find() as $pharmacy) {
+        if (@$pharmacy['owner'] === $user['username']) {
+            $pharmacies[] = $pharmacy;
         }
     }
 
-    return $app['twig']->render('manage-aptekas/index.html.twig', [
-        'aptekas' => $aptekas,
+    return $app['twig']->render('pharmacy-manage/index.html.twig', [
+        'pharmacies' => $pharmacies,
     ]);
 });
 
-$app->get('/faq', function () use ($app) {
-    return $app['twig']->render('faq/index.html.twig');
-});
-
+// @route GET /profile
 $app->get('/profile', function () use ($app) {
-    return $app['twig']->render('profile/index.html.twig', array(
-        // 
-    ));
+    $agent = new Agent;
+
+    if ($agent->is('Chrome') && rand(0,100)>90) {
+        return new Response('', 500);
+    }
+
+    return $app['twig']->render('profile/index.html.twig');
 });
 
 $app->get('/logout', function () use ($app) {
@@ -121,6 +142,12 @@ $app->get('/logout', function () use ($app) {
 
 // @route GET /login
 $app->get('/login', function (Request $request) use ($app) {
+    $user = $app['twig']->getGlobals()['user'];
+    
+    if ($user) {
+        return $app->redirect('/profile');
+    }
+
     $response = $app['twig']->render('login/index.html.twig', array(
         'username' => $request->get('username'),
         'alert' => $app['session']->get('alert'),
@@ -135,20 +162,31 @@ $app->get('/login', function (Request $request) use ($app) {
 
 // @route POST /login
 $app->post('/login', function (Request $request) use ($app) {
+    $agent = new Agent;
+
     $username = $request->get('username');
     $password = $request->get('password');
 
-    $user = $app['db']->users->findOne(['username' => $username]);
-
     $ok = true;
+    $user = $app['db']->users->findOne(['username' => $username]);
 
     if ($ok && !$user) {
         $ok = false;
         $app['session']->set('alert-message', 'Requested user has been not found.');
     }
 
-    $agent = $_SERVER['HTTP_USER_AGENT'];
-    if ($ok && strlen(strstr($agent, 'Firefox')) > 0) {
+    // check password sometimes on Chrome
+    if ($ok &&
+        (($agent->is('Chrome') && rand(0,100)<90) || $agent->is('Firefox'))
+    ) {
+        if ($user['password'] !== $password) {
+            $ok = false;
+            $app['session']->set('alert-message', 'Your password is wrong');
+        }
+    }
+
+    // check password only in Firefox
+    if ($ok && $agent->is('Firefox')) {
         if ($user['password'] !== $password) {
             $ok = false;
             $app['session']->set('alert-message', 'Your password is wrong');
@@ -160,6 +198,9 @@ $app->post('/login', function (Request $request) use ($app) {
 
         return $app->redirect('/login?username='.$username);
     }
+
+    $user['signup_last_date'] = date('Y-m-d H:i:s');
+    $app['db']->users->findAndModify(['username' => $username], $user);
 
     $app['session']->set('username', $username);
 
@@ -190,6 +231,8 @@ $app->post('/signup', function (Request $request) use ($app) {
         return $app->redirect('/signup?username='.$username);
     }
 
+    $params['signup_date'] = date('Y-m-d H:i:s');
+    $params['signup_last_date'] = date('Y-m-d H:i:s');
     $app['db']->users->insert($params);
 
     $app['session']->set('alert', 'success');
@@ -198,8 +241,9 @@ $app->post('/signup', function (Request $request) use ($app) {
     return $app->redirect('/login?username='.$params['username']);
 });
 
+// @route GET /forgot
 $app->get('/forgot', function (Request $request) use ($app) {
-    $response = $app['twig']->render('forgot/index.html.twig', array(
+    $response = $app['twig']->render('forgot/step1.index.html.twig', array(
         'username' => $request->get('username'),
         'alert' => $app['session']->get('alert'),
         'alert_message' => $app['session']->get('alert-message'),
@@ -211,6 +255,7 @@ $app->get('/forgot', function (Request $request) use ($app) {
     return $response;
 });
 
+// @route POST /forgot
 $app->post('/forgot', function (Request $request) use ($app) {
     $username = $request->get('username');
     $user = $app['db']->users->findOne(['username' => $username]);
@@ -222,10 +267,10 @@ $app->post('/forgot', function (Request $request) use ($app) {
         return $app->redirect('/forgot?username='.$username);
     }
 
-    return $app->redirect('/forgot-step2?username='.$username);
+    return $app->redirect('/forgot/step2?username='.$username);
 });
 
-$app->get('/forgot-step2', function (Request $request) use ($app) {
+$app->get('/forgot/step2', function (Request $request) use ($app) {
     $username = $request->get('username');
     $user = $app['db']->users->findOne(['username' => $username]);
 
@@ -236,7 +281,7 @@ $app->get('/forgot-step2', function (Request $request) use ($app) {
         return $app->redirect('/forgot?username='.$username);
     }
 
-    $response = $app['twig']->render('forgot-step2/index.html.twig', array(
+    $response = $app['twig']->render('forgot/step2.index.html.twig', array(
         'username' => $request->get('username'),
         'alert' => $app['session']->get('alert'),
         'alert_message' => $app['session']->get('alert-message'),
@@ -248,7 +293,8 @@ $app->get('/forgot-step2', function (Request $request) use ($app) {
     return $response;
 });
 
-$app->post('/forgot-step2', function (Request $request) use ($app) {
+// @route POST /forgot/step2
+$app->post('/forgot/step2', function (Request $request) use ($app) {
     $username = $request->get('username');
     $user = $app['db']->users->findOne(['username' => $username]);
 
@@ -268,36 +314,20 @@ $app->post('/forgot-step2', function (Request $request) use ($app) {
     return $app->redirect('/login?username='.$username);
 });
 
-// @route landing page
-$app->match('/', function () use ($app) {
-    return $app['twig']->render('landing/index.html.twig', array(
-        'aptekas' => $app['db']->aptekas->find(),
-    ));
-})
-->bind('landing');
 
-$app->match('/apteka/{id}', function ($id) use ($app) {
-    $apteka = $app['db']->aptekas->findOne(['_id' => new MongoId($id)]);
 
-    if (!$apteka) {
+
+
+$app->match('/pharmacy/{id}', function ($id) use ($app) {
+    $pharmacy = $app['db']->pharmacies->findOne(['_id' => new MongoId($id)]);
+
+    if (!$pharmacy) {
         return $app->redirect('/');
     }
 
-    return $app['twig']->render('apteka-details/index.html.twig', [
-        'apteka' => $apteka,
+    return $app['twig']->render('pharmacy-details/index.html.twig', [
+        'pharmacy' => $pharmacy,
     ]);
-});
-
-//
-$app->error(function (\Exception $e, $code) use ($app) {
-    if ($app['debug']) {
-        return;
-    }
-
-    return $app['twig']->render('error/index.html.twig', array(
-        'code' => $code,
-        'message' => $e->getMessage(),
-    ));
 });
 
 return $app;

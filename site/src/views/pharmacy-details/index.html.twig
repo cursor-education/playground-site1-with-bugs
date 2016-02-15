@@ -1,14 +1,14 @@
 {% extends "layout.html.twig" %}
 
-{% set pageName = 'apteka-details' %}
+{% set pageName = 'pharmacy-details' %}
 
 {% block content %}
   <ul class="breadcrumb">
     <li><a href="/">Home</a></li>
-    <li class="active">Apteka</li>
+    <li class="active">Pharmacy</li>
   </ul>
 
-  <h1>Apteka "{{ lipsum.word() }}"</h1>
+  <h1>Pharmacy "{{ lipsum.word() }}"</h1>
 
   <ul class="nav nav-tabs top15">
     <li class="active"><a href="#details" data-toggle="tab" aria-expanded="true">Details</a></li>
@@ -17,13 +17,13 @@
   </ul>
   <div id="myTabContent" class="tab-content">
     <div class="tab-pane fade active in" id="details">
-      {% include 'apteka-details/_tab_details.html.twig' %}
+      {% include 'pharmacy-details/_tab_details.html.twig' %}
     </div>
     <div class="tab-pane fade" id="managers">
-      {% include 'apteka-details/_tab_managers.html.twig' %}
+      {% include 'pharmacy-details/_tab_managers.html.twig' %}
     </div>
     <div class="tab-pane fade" id="products">
-      {% include 'apteka-details/_tab_products.html.twig' %}
+      {% include 'pharmacy-details/_tab_products.html.twig' %}
     </div>
   </div>
 

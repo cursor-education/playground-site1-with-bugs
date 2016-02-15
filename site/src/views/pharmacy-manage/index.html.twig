@@ -1,18 +1,18 @@
 {% extends "layout.html.twig" %}
 
-{% set pageName = 'add-apteka' %}
+{% set pageName = 'pharmacy-add' %}
 
 {% block content %}
   <ul class="breadcrumb">
     <li><a href="/">Home</a></li>
-    <li class="active">Manages my aptekas</li>
+    <li class="active">Manages my pharmacies</li>
   </ul>
 
   <div class="row top50">
     <div class="col-md-12">
-      {% for apteka in aptekas %}
+      {% for pharmacy in pharmacies %}
         <div class="row">
-          <a href="/manage-apteka/{{ apteka._id }}">{{ apteka.name }}</a>
+          <a href="/manage-pharmacy/{{ pharmacy._id }}">{{ pharmacy.name }}</a>
         </div>
       {% endfor %}
     </div>

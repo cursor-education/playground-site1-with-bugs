@@ -1,18 +1,18 @@
 {% extends "layout.html.twig" %}
 
-{% set pageName = 'add-apteka' %}
+{% set pageName = 'pharmacy-add' %}
 
 {% block content %}
   <ul class="breadcrumb">
     <li><a href="/">Home</a></li>
-    <li class="active">Add new apteka</li>
+    <li class="active">Add new pharmacy</li>
   </ul>
 
   <div class="row top50">
     <div class="col-md-8 col-md-offset-2">
       <form class="form-horizontal" method="POST" action="?">
         <fieldset>
-          <legend>Add new apteka</legend>
+          <legend>Add new pharmacy</legend>
 
           {% if alert|default(false) %}
           <div class="alert alert-dismissible alert-{{ alert }}">
