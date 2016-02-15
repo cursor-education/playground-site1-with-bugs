@@ -6,8 +6,18 @@ PORT = 80
 
 .PHONY: all
 
-all: up clean build run configure assets server
-dev: set-dev all
+help:
+	@echo " all \t\t to run all on production machine"
+	@echo " dev \t\t to run all on development machine"
+	@echo " clean \t\t to clean project-related containers & images"
+	@echo " clean-all \t to clean all Docker containers & images"
+	@echo " ssh \t\t to access into container"
+	@echo " assets \t\t "
+	@echo " assets-watch \t\t "
+
+all: up clean build run assets
+# configure 
+dev: set-dev clean-all all
 
 up:
 	git pull --force
@@ -43,18 +53,12 @@ run: stop
 ssh:
 	docker exec -ti ${CONTAINER_NAME} bash
 
-configure:
-	docker exec -ti ${CONTAINER_NAME} bower install --allow-root --config.interactive=false
-	docker exec -ti ${CONTAINER_NAME} npm install
+# configure:
+	# docker exec -ti ${CONTAINER_NAME} bower install --allow-root --config.interactive=false
+	# docker exec -ti ${CONTAINER_NAME} npm install
 
 assets:
 	docker exec -ti ${CONTAINER_NAME} grunt
 
 assets-watch:
 	docker exec -ti ${CONTAINER_NAME} grunt watch-all
-
-server: server-stop
-	docker exec ${CONTAINER_NAME} /bin/sh -c 'nohup http-server web/ -p 8080 -a 0.0.0.0 >/dev/null 2>&1 &'
-
-server-stop:
-	docker exec -ti ${CONTAINER_NAME} /bin/sh -c 'killall node || true'
