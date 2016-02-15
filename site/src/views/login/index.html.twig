@@ -1,0 +1,51 @@
+{% extends "layout.html.twig" %}
+
+{% set pageName = 'login' %}
+
+{% block content %}
+
+<br/><br/>
+
+<div class="row">
+  <div class="col-md-6 col-md-offset-3">
+    <form class="form-horizontal" method="POST" action="/login">
+      <fieldset>
+        <legend>Login</legend>
+
+        <div class="alert alert-dismissible alert-danger">
+          <strong>Error!</strong> {{ error }}
+        </div>
+
+        <div class="form-group" class="required">
+          <label class="col-lg-2 control-label">Username</label>
+          <div class="col-lg-10">
+            <input type="text" class="form-control" name="username" required="true" value="{{ username }}" />
+          </div>
+        </div>
+
+        <div class="form-group" class="required">
+          <label class="col-lg-2 control-label">Password</label>
+          <div class="col-lg-10">
+            <input type="password" class="form-control" name="password" required="true">
+          </div>
+        </div>
+
+        <div class="form-group" class="required">
+          <label class="col-lg-2 control-label"></label>
+          <div class="col-lg-10">
+            <a href="/forgot"><span class="glyphicon glyphicon-question-sign"></span> forgot your password</a>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="col-lg-10 col-lg-offset-2">
+            <button type="reset" class="btn btn-default">Cancel</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </div>
+      </fieldset>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,12 @@
+version: '1.3-mailer'
+
+environment: default
+debug: false
+twig.options.cache: false
+
+cache.enabled: true
+
+mail.host: null
+mail.transport: null
+mail.username: null
+mail.password: null
