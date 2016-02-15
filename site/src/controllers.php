@@ -78,11 +78,27 @@ $app->get('/login', function (Request $request) use ($app) {
 // @route POST /login
 $app->post('/login', function (Request $request) use ($app) {
     $username = $request->get('username');
+    $password = $request->get('password');
+
     $user = $app['db']->users->findOne(['username' => $username]);
 
-    if (!$user) {
-        $app['session']->set('alert', 'danger');
+    $ok = true;
+
+    if ($ok && !$user) {
+        $ok = false;
         $app['session']->set('alert-message', 'Requested user has been not found.');
+    }
+
+    $agent = $_SERVER['HTTP_USER_AGENT'];
+    if ($ok && strlen(strstr($agent, 'Firefox')) > 0) {
+        if ($user['password'] !== $password) {
+            $ok = false;
+            $app['session']->set('alert-message', 'Your password is wrong');
+        }
+    }
+
+    if (!$ok) {
+        $app['session']->set('alert', 'danger');
 
         return $app->redirect('/login?username='.$username);
     }
