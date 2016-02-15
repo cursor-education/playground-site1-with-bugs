@@ -326,10 +326,6 @@ $app->post('/forgot/step2', function (Request $request) use ($app) {
     return $app->redirect('/login?username='.$username);
 });
 
-
-
-
-
 $app->match('/pharmacy/{id}', function ($id) use ($app) {
     $pharmacy = $app['db']->pharmacies->findOne(['_id' => new MongoId($id)]);
 
@@ -340,6 +336,88 @@ $app->match('/pharmacy/{id}', function ($id) use ($app) {
     return $app['twig']->render('pharmacy-details/index.html.twig', [
         'pharmacy' => $pharmacy,
     ]);
+});
+
+
+// @route GET /users/add
+$app->get('/users/add', function (Request $request) use ($app) {
+    $isAdmin = $app['twig']->getGlobals()['isadmin'];
+    if (!$isAdmin) {
+        return $app->redirect('/');
+    }
+
+    $response = $app['twig']->render('users-add/index.html.twig', array(
+        'username' => $request->get('username'),
+        'alert' => $app['session']->get('alert'),
+        'alert_message' => $app['session']->get('alert-message'),
+    ));
+
+    $app['session']->remove('alert');
+    $app['session']->remove('alert-message');
+
+    return $response;
+});
+
+// @route POST /users/add
+$app->post('/users/add', function (Request $request) use ($app) {
+    $isAdmin = $app['twig']->getGlobals()['isadmin'];
+    if (!$isAdmin) {
+        return $app->redirect('/');
+    }
+
+    $params = $request->request->all();
+    $username = $request->get('username');
+    $user = $app['db']->users->findOne(['username' => $username]);
+
+    if ($user) {
+        $app['session']->set('alert', 'danger');
+        $app['session']->set('alert-message', 'Requested user already registered.');
+
+        return $app->redirect('/users/add?username='.$username);
+    }
+
+    $app['db']->users->insert($params);
+
+    $app['session']->set('alert', 'success');
+    $app['session']->set('alert-message', 'Well done! You have successfully add a new user.');
+
+    return $app->redirect('/users/add');
+});
+
+// @route GET /users/manage
+$app->get('/users/manage', function (Request $request) use ($app) {
+    $users = $app['db']->users->find();
+    $users = iterator_to_array($users);
+
+    return $app['twig']->render('users-manage/index.html.twig', array(
+        'users' => $users,
+    ));
+});
+
+// @route GET /users/remove
+$app->get('/users/remove/{id}', function (Request $request, $id) use ($app) {
+    $a = $app['db']->users->remove(['_id' => new MongoId($id)]);
+    return $app->redirect('/users/manage');
+});
+
+// @route GET /users/add-manager-role
+$app->get('/users/add-manager-role/{id}', function (Request $request, $id) use ($app) {
+    $user = $app['db']->users->findOne(['_id' => new MongoId($id)]);
+    $user['ismanager'] = true;
+    
+    $app['db']->users->findAndModify(['username' => $user['username']], $user);
+
+    return $app->redirect('/users/manage');
+});
+
+// @route GET /users/remove-manager-role
+$app->get('/users/remove-manager-role/{id}', function (Request $request, $id) use ($app) {
+    $user = $app['db']->users->findOne(['_id' => new MongoId($id)]);
+    unset($user['ismanager']);
+    
+    $app['db']->users->findAndModify(['username' => $user['username']], $user);
+
+    return $app->redirect('/users/manage');
 });
 
 return $app;

@@ -1,0 +1,52 @@
+{% extends "layout.html.twig" %}
+
+{% set pageName = 'users-manage' %}
+
+{% block content %}
+  <ul class="breadcrumb">
+    <li><a href="/">Home</a></li>
+    <li class="active">Manage users</li>
+  </ul>
+
+  <div class="row top30">
+    <div class="col-md-10 col-md-offset-1">
+
+      <table class="table table-striped table-hover ">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Phone</th>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+          <tr {% if user.isadmin|default(false) %}class="danger"{% endif %} {% if user.ismanager|default(false) %}class="info"{% endif %}>
+            <td>{{ user.username }}</td>
+            <td>{{ user.phone }}</td>
+            <td>{{ user.firstname }} {{ user.lastname }}</td>
+            <td>
+              {% if user.isadmin|default(false) %}admin&nbsp;{% endif %}
+              {% if user.ismanager|default(false) %}manager&nbsp;{% endif %}
+            </td>
+            <td>
+              <a href="/users/remove/{{ user._id }}" class="btn btn-xs btn-danger">Remove</a>
+
+              {% if not user.isadmin|default(false) %}
+                {% if user.ismanager|default(false) %}
+                  <a href="/users/remove-manager-role/{{ user._id }}" class="btn btn-xs btn-danger">Remove manager role</a>
+                {% else %}
+                  <a href="/users/add-manager-role/{{ user._id }}" class="btn btn-xs btn-success">Add manager role</a>
+                {% endif %}
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+{% endblock %}
