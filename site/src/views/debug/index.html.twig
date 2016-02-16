@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+{% spaceless %}
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+  <link type="text/css" rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+  <link type="text/css" rel="stylesheet" href="https://bootswatch.com/united/bootstrap.min.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Databases:</h1>
+    {% for  database in db.listDBs().databases %}
+      <div class="media">
+        <div class="media-left">
+          <span class="label label-primary">database</span>
+        </div>
+        <div class="media-body">
+          <h4 class="media-heading">{{ database.name }}</h4>
+
+          {% for collection in db.selectDb(database.name).listCollections() %}
+            <div class="media">
+              <div class="media-left">
+                <span class="label label-info">collection</span>
+              </div>
+              <div class="media-body">
+                <h4 class="media-heading">{{ collection.getName() }} <span class="badge">{{ collection.count() }}</span></a></h4>
+
+                {% for row in db.selectDb(database.name).selectCollection(collection.getName()).find() %}
+                  <div class="media">
+                    <div class="media-left">
+                      <span class="label label-default">row</span>
+                    </div>
+                    <div class="media-body">
+                      {{ row|json_encode }}
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+</body>
+{% endspaceless %}
+</html>

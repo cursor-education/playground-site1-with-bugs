@@ -8,6 +8,7 @@
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
+      {% if not hideHeaderLeftMenu|default(false) %}
       <ul class="nav navbar-nav">
         <li {% if pageName == "landing" %}class="active"{% endif %}><a href="/">Home</a></li>
 
@@ -32,6 +33,7 @@
         <li {% if pageName == "faq" or pageName == "disclaimer" %}class="active"{% endif %}><a href="/faq">FAQ</a></li>
         <li {% if pageName == "disclaimer" %}class="active"{% endif %}><a href="/disclaimer">Disclaimer</a></li>
       </ul>
+      {% endif %}
       <ul class="nav navbar-nav navbar-right">
         {% if user|default(false) %}
           <li><a href="/profile">My profile</a></li>
@@ -40,7 +42,6 @@
         {% else %}
           <li><a href="/login">Login</a></li>
           <li><a href="/signup">Sign Up</a></li>
-          <li><a href="/forgot">Forgot</a></li>
         {% endif %}
       </ul>
     </div>

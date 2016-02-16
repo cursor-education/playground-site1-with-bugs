@@ -6,58 +6,43 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use \Jenssegers\Agent\Agent as Agent;
 use Laracasts\Flash\FlashServiceProvider as Flash;
+use app\services\UserRoleService as UserRoleService;
 
-$app->match('/phpinfo', function () use ($app) {
-    phpinfo();
-    die;
-});
-
-$app->match('/debug', function () use ($app) {
-    $db = $app['mongo']['default']->playground;
-
-    echo '<pre>';
-
-    echo '<h2>Dbs:</h2>';
-    var_dump($app['mongo']['default']->listDBs());
-
-    echo '<h2>Collections (playground db):</h2>';
-    var_dump($db->listCollections());
-
-    foreach ($db->listCollections() as $collection) {
-        $collectionName = $collection->getName();
-        var_dump($collectionName);
-    }
-    var_dump('<br><br>');
-
-    echo '<h2>Users:</h2>';
-
-    foreach ($db->users->find() as $key => $value) {
-        var_dump($key, $value);
-    }
-
-    var_dump('<br><br>');
-    
-    echo '<h2>Pharmacies:</h2>';
-
-    foreach ($db->pharmacies->find() as $key => $value) {
-        var_dump($key, $value);
-    }
-
-    die;
-});
-
+//
 $app->before(function (Request $request, Application $app) {
+    //
     $app['twig']->addGlobal('lipsum', new joshtronic\LoremIpsum());
 
-    $user = null;
-    if ($username = $app['session']->get('username')) {
-        $user = $app['db']->users->findOne(['username' => $username]);
+    if ($app['user.service']->isAuthenticated()) {
+        $user = $app['user.service']->getAuthenticatedUser();
+
+        $app['twig']->addGlobal('user', $user);
+        $app['twig']->addGlobal('isadmin', $user && !empty($user['isadmin']));
+        $app['twig']->addGlobal('ismanager', $user && !empty($user['ismanager']));
     }
-    $app['twig']->addGlobal('user', $user);
-    $app['twig']->addGlobal('isadmin', $user && !empty($user['isadmin']));
-    $app['twig']->addGlobal('ismanager', $user && !empty($user['ismanager']));
 
 }, Application::EARLY_EVENT);
+
+// @route GET /phpinfo
+$app->get('/phpinfo', function () use ($app) {
+    ob_start();
+    phpinfo();
+    $phpinfo = ob_get_contents();
+    ob_get_clean();
+
+    return new Response($phpinfo, 201);
+})
+// ->after($app['userRole.service']->getValidateRoleCallback(UserRoleService::ROLE_ADMIN))
+;
+
+// @route GET /debug
+$app->match('/debug', function () use ($app) {
+    return $app['twig']->render('debug/index.html.twig', [
+        'db' => $app['mongo']['default'],
+    ]);
+})
+// ->after($app['userRole.service']->getValidateRoleCallback(UserRoleService::ROLE_ADMIN))
+;
 
 // @route landing page
 $app->match('/', function (Request $request) use ($app) {
@@ -77,7 +62,9 @@ $app->match('/', function (Request $request) use ($app) {
         'pages' => $pages,
     ));
 })
-->bind('landing');
+->bind('landing')
+// ->after($app['userRole.service']->getAuthenticatedRoleCallback())
+;
 
 // @route GET /faq
 $app->get('/faq', function () use ($app) {
@@ -122,7 +109,7 @@ $app->post('/pharmacy/add', function (Request $request) use ($app) {
 });
 
 $app->get('/pharmacy/manage', function () use ($app) {
-    $user = $app['twig']->getGlobals()['user'];
+    $user = @$app['twig']->getGlobals()['user'];
 
     $pharmacies = [];
     foreach ($app['db']->pharmacies->find() as $pharmacy) {
@@ -155,7 +142,7 @@ $app->get('/logout', function () use ($app) {
 
 // @route GET /login
 $app->get('/login', function (Request $request) use ($app) {
-    $user = $app['twig']->getGlobals()['user'];
+    $user = $app['user.service']->getAuthenticatedUser();
     
     if ($user) {
         return $app->redirect('/profile');
@@ -456,7 +443,7 @@ $app->get('/pharmacy/{pharmacyId}/products/{productId}/buy', function (Request $
 
 // @route GET /users/add
 $app->get('/users/add', function (Request $request) use ($app) {
-    $isAdmin = $app['twig']->getGlobals()['isadmin'];
+    $isAdmin = @$app['twig']->getGlobals()['isadmin'];
     if (!$isAdmin) {
         return $app->redirect('/');
     }
@@ -475,7 +462,7 @@ $app->get('/users/add', function (Request $request) use ($app) {
 
 // @route POST /users/add
 $app->post('/users/add', function (Request $request) use ($app) {
-    $isAdmin = $app['twig']->getGlobals()['isadmin'];
+    $isAdmin = @$app['twig']->getGlobals()['isadmin'];
     if (!$isAdmin) {
         return $app->redirect('/');
     }

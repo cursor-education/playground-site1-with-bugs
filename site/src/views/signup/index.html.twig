@@ -1,5 +1,6 @@
 {% extends "layout.html.twig" %}
 
+{% set hideHeaderLeftMenu = true %}
 {% set pageName = 'signup' %}
 
 {% block content %}
@@ -8,78 +9,79 @@
     <li class="active">Signup</li>
   </ul>
 
-  <div class="row top50">
+  <div class="row top30">
     <div class="col-md-6 col-md-offset-3">
       <form class="form-horizontal" method="POST" action="/signup">
         <fieldset>
           <legend>Registration</legend>
 
-          {% if alert %}
-          <div class="alert alert-dismissible alert-{{ alert }}">
-            {{ alert_message }}
-          </div>
-          {% endif %}
+          {% include '_alert.html.twig' %}
 
           <div class="form-group required">
-            <label class="col-lg-3 control-label">Username</label>
-            <div class="col-lg-9">
+            <label class="col-lg-4 control-label">Username</label>
+            <div class="col-lg-8">
               <input required="true" type="text" class="form-control" name="username" placeholder="username" tabindex="3">
             </div>
           </div>
 
           <div class="form-group">
-            <label class="col-lg-3 control-label">Phone number</label>
-            <div class="col-lg-9">
+            <label class="col-lg-4 control-label">Phone number</label>
+            <div class="col-lg-8">
               <input type="text" class="form-control" placeholder="phone" name="phone" tabindex="2" maxlength="11" required="true">
             </div>
           </div>
 
           <div class="form-group">
-            <label class="col-lg-3 control-label">Frist name</label>
-            <div class="col-lg-9">
-              <input type="text" class="form-control" placeholder="username" name="firstname" tabindex="5">
+            <label class="col-lg-4 control-label">Frist name</label>
+            <div class="col-lg-8">
+              <input type="text" class="form-control" placeholder="first name" name="firstname" tabindex="5">
             </div>
           </div>
 
           <div class="form-group">
-            <label class="col-lg-3 control-label">Last name</label>
-            <div class="col-lg-9">
-              <input type="text" class="form-control" placeholder="username" name="lastname" tabindex="4">
+            <label class="col-lg-4 control-label">Last name</label>
+            <div class="col-lg-8">
+              <input type="text" class="form-control" placeholder="last name" name="lastname" tabindex="4">
             </div>
           </div>
 
           <div class="form-group required">
-            <label class="col-lg-3 control-label">Password</label>
-            <div class="col-lg-9">
-              <input type="password" class="form-control" placeholder="Password" name="password" required="true">
+            <label class="col-lg-4 control-label">Password</label>
+            <div class="col-lg-8">
+              <input type="password" class="form-control" placeholder="password" name="password" required="true">
             </div>
           </div>
 
           <div class="form-group">
-            <label class="col-lg-3 control-label">Confirm password</label>
-            <div class="col-lg-9">
-              <input type="password" class="form-control" placeholder="Password" required="true">
+            <label class="col-lg-4 control-label">Confirm password</label>
+            <div class="col-lg-8">
+              <input type="password" class="form-control" placeholder="repeat your password" required="true">
             </div>
           </div>
 
           <div class="form-group">
-            <label class="col-lg-3 control-label">Photo</label>
-            <div class="col-lg-9">
+            <label class="col-lg-4 control-label">Photo</label>
+            <div class="col-lg-8">
               <span class="btn btn-default btn-file">
-                  Browse <input type="file">
+                <input type="file">
               </span>
             </div>
           </div>
 
           <div class="form-group">
-            <label class="col-lg-3 control-label">&nbsp;</label>
-            <div class="col-lg-9">
-                <input type="checkbox" name="isadmin"> Admin
+            <label class="col-lg-4 control-label">Role</label>
+            <div class="col-lg-8">
+              <div class="checkbox">
+                <label>
+                  <input type="checkbox" name="isadmin"> Admin
+                </label>
+              </div>
             </div>
           </div>
 
-          <div class="form-group">
-            <div class="col-lg-9 col-lg-offset-2">
+          <div class="form-group top30">
+            <label class="col-lg-4">&nbsp;</label>
+            <div class="col-lg-8">
               <button type="submit" class="btn btn-default">Cancel</button>
               <button type="submit" class="btn btn-primary">Submit</button>
             </div>
