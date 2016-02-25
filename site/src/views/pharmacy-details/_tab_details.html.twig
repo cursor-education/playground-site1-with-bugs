@@ -7,48 +7,48 @@
       <div class="form-group">
         <label class="col-lg-3 control-label">Address 1</label>
         <div class="col-lg-9">
-          <input type="text" name="address1" {% if not (isadmin or ismanager) %}disabled{% endif %} class="form-control" value="{{ pharmacy.address1 }}">
+          <input type="text" name="address1" {% if not (userIsAdmin or userIsManager) %}disabled{% endif %} class="form-control" value="{{ pharmacy.address1 }}">
         </div>
       </div>
 
       <div class="form-group">
         <label class="col-lg-3 control-label">Address 2</label>
         <div class="col-lg-9">
-          <input type="text" name="address2" {% if not (isadmin or ismanager) %}disabled{% endif %} class="form-control" value="{{ pharmacy.address3 }}">
+          <input type="text" name="address2" {% if not (userIsAdmin or userIsManager) %}disabled{% endif %} class="form-control" value="{{ pharmacy.address3 }}">
         </div>
       </div>
 
       <div class="form-group">
         <label class="col-lg-3 control-label">Address 3</label>
         <div class="col-lg-9">
-          <input type="text" name="address3" {% if not (isadmin or ismanager) %}disabled{% endif %} class="form-control" value="{{ pharmacy.address2 }}">
+          <input type="text" name="address3" {% if not (userIsAdmin or userIsManager) %}disabled{% endif %} class="form-control" value="{{ pharmacy.address2 }}">
         </div>
       </div>
 
       <div class="form-group">
         <label class="col-lg-3 control-label">Address 4</label>
         <div class="col-lg-9">
-          <input type="text" name="address4" {% if not (isadmin or ismanager) %}disabled{% endif %} class="form-control" value="{{ pharmacy.address4 }}">
+          <input type="text" name="address4" {% if not (userIsAdmin or userIsManager) %}disabled{% endif %} class="form-control" value="{{ pharmacy.address4 }}">
         </div>
       </div>
 
       <div class="form-group">
         <label class="col-lg-3 control-label">Country</label>
         <div class="col-lg-9">
-          <input type="text" name="country" {% if not (isadmin or ismanager) %}disabled{% endif %} class="form-control" value="{{ pharmacy.country }}">
+          <input type="text" name="country" {% if not (userIsAdmin or userIsManager) %}disabled{% endif %} class="form-control" value="{{ pharmacy.country }}">
         </div>
       </div>
 
       <div class="form-group">
         <label class="col-lg-3 control-label">Description</label>
         <div class="col-lg-9">
-          <textarea name="description" {% if not (isadmin or ismanager) %}disabled{% endif %} class="form-control">{{ pharmacy.description }}</textarea>
+          <textarea name="description" {% if not (userIsAdmin or userIsManager) %}disabled{% endif %} class="form-control">{{ pharmacy.description }}</textarea>
         </div>
       </div>
 
       <div class="form-group">
         <div class="col-lg-9 col-lg-offset-3">
-          {% if (isadmin or ismanager) %}
+          {% if (userIsAdmin or userIsManager) %}
             <button type="reset" class="btn btn-default">Cancel</button>
             <button type="submit" class="btn btn-primary">Save</button>
           {% endif %}
@@ -67,14 +67,14 @@
       <div class="form-group">
         <label class="col-lg-3 control-label">Phone 1</label>
         <div class="col-lg-9">
-          <input name="phone1" type="text" {% if not (isadmin or ismanager) %}disabled{% endif %} class="form-control" value="{{ pharmacy.phone1 }}">
+          <input name="phone1" type="text" {% if not (userIsAdmin or userIsManager) %}disabled{% endif %} class="form-control" value="{{ pharmacy.phone1 }}">
         </div>
       </div>
 
       <div class="form-group">
         <label class="col-lg-3 control-label">Phone 2</label>
         <div class="col-lg-9">
-          <input name="phone2" type="text" {% if not (isadmin or ismanager) %}disabled{% endif %} class="form-control" value="{{ pharmacy.phone2 }}">
+          <input name="phone2" type="text" {% if not (userIsAdmin or userIsManager) %}disabled{% endif %} class="form-control" value="{{ pharmacy.phone2 }}">
         </div>
       </div>
     </div>

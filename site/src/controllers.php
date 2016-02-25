@@ -16,9 +16,12 @@ $app->before(function (Request $request, Application $app) {
     if ($app['user.service']->isAuthenticated()) {
         $user = $app['user.service']->getAuthenticatedUser();
 
+        $isAdmin = $app['userRole.service']->validateRole(UserRoleService::ROLE_ADMIN);
+        $isManager = $app['userRole.service']->validateRole(UserRoleService::ROLE_MANAGER);
+
         $app['twig']->addGlobal('user', $user);
-        $app['twig']->addGlobal('isadmin', $user && !empty($user['isadmin']));
-        $app['twig']->addGlobal('ismanager', $user && !empty($user['ismanager']));
+        $app['twig']->addGlobal('userIsAdmin', $isAdmin);
+        $app['twig']->addGlobal('userIsManager', $isManager);
     }
 
 }, Application::EARLY_EVENT);
@@ -32,7 +35,6 @@ $app->get('/phpinfo', function () use ($app) {
 
     return new Response($phpinfo, 201);
 })
-// ->after($app['userRole.service']->getValidateRoleCallback(UserRoleService::ROLE_ADMIN))
 ;
 
 // @route GET /debug
@@ -41,7 +43,6 @@ $app->match('/debug', function () use ($app) {
         'db' => $app['mongo']['default'],
     ]);
 })
-// ->after($app['userRole.service']->getValidateRoleCallback(UserRoleService::ROLE_ADMIN))
 ;
 
 // @route landing page
@@ -63,7 +64,7 @@ $app->match('/', function (Request $request) use ($app) {
     ));
 })
 ->bind('landing')
-// ->after($app['userRole.service']->getAuthenticatedRoleCallback())
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
 ;
 
 // @route GET /faq
@@ -86,7 +87,9 @@ $app->get('/pharmacy/add', function () use ($app) {
     $app['session']->remove('alert-message');
 
     return $response;
-});
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+;
 
 $app->post('/pharmacy/add', function (Request $request) use ($app) {
     $name = $request->get('name');
@@ -106,7 +109,9 @@ $app->post('/pharmacy/add', function (Request $request) use ($app) {
     $app['session']->set('alert-message', 'Well done! You have successfully add a new pharmacy.');
 
     return $app->redirect('/pharmacy/add');
-});
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+;
 
 $app->get('/pharmacy/manage', function () use ($app) {
     $user = @$app['twig']->getGlobals()['user'];
@@ -121,7 +126,9 @@ $app->get('/pharmacy/manage', function () use ($app) {
     return $app['twig']->render('pharmacy-manage/index.html.twig', [
         'pharmacies' => $pharmacies,
     ]);
-});
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+;
 
 // @route GET /profile
 $app->get('/profile', function () use ($app) {
@@ -132,13 +139,17 @@ $app->get('/profile', function () use ($app) {
     }
 
     return $app['twig']->render('profile/index.html.twig');
-});
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+;
 
 $app->get('/logout', function () use ($app) {
     $app['session']->remove('username');
 
     return $app->redirect('/login');
-});
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+;
 
 // @route GET /login
 $app->get('/login', function (Request $request) use ($app) {
@@ -233,6 +244,15 @@ $app->post('/signup', function (Request $request) use ($app) {
 
     $params['signup_date'] = date('Y-m-d H:i:s');
     $params['signup_last_date'] = date('Y-m-d H:i:s');
+
+    $params['roles'] = array();
+
+    if (!empty($params['isadmin'])) {
+        $params['roles'][] = UserRoleService::ROLE_ADMIN;
+
+        unset($params['isadmin']);
+    }
+
     $app['db']->users->insert($params);
 
     $app['session']->set('alert', 'success');
@@ -331,7 +351,9 @@ $app->get('/pharmacy/{id}', function ($id) use ($app) {
     $app['session']->remove('alert-message');
 
     return $response;
-});
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+;
 
 $app->post('/pharmacy/{id}', function (Request $request, $id) use ($app) {
     $params = $request->request->all();
@@ -347,7 +369,9 @@ $app->post('/pharmacy/{id}', function (Request $request, $id) use ($app) {
     $app['db']->pharmacies->findAndModify($pharmacySearchConditions, $pharmacy);
 
     return $app->redirect('/pharmacy/'.$id);
-});
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+;
 
 $app->post('/pharmacy/{id}/products/add', function (Request $request, $id) use ($app) {
     $params = $request->request->all();
@@ -369,7 +393,81 @@ $app->post('/pharmacy/{id}/products/add', function (Request $request, $id) use (
     $app['db']->pharmacies->findAndModify($pharmacySearchConditions, $pharmacy);
 
     return $app->redirect('/pharmacy/'.$id);
-});
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+;
+
+$app->post('/pharmacy/{id}/managers/add', function (Request $request, $id) use ($app) {
+    $params = $request->request->all();
+
+    $pharmacySearchConditions = ['_id' => new MongoId($id)];
+    $pharmacy = $app['db']->pharmacies->findOne($pharmacySearchConditions);
+
+    if (!$pharmacy) {
+        return $app->redirect('/');
+    }
+
+    $managerUsername = $params['login'];
+    $managerRecord = $app['db']->users->findOne(['username' => $managerUsername]);
+
+    if (!$managerRecord) {
+        return $app->redirect('/');
+    }
+
+    if (!isset($pharmacy['managers'])) {
+        $pharmacy['managers'] = array();
+    }
+
+    if (!in_array($managerUsername, $pharmacy['managers'])) {
+        $pharmacy['managers'][] = $managerUsername;
+
+        $app['db']->pharmacies->findAndModify($pharmacySearchConditions, $pharmacy);
+
+        $app['session']->set('alert', 'success');
+        $app['session']->set('alert-message', 'Manager was added.');        
+    }
+    else {
+        $app['session']->set('alert', 'danger');
+        $app['session']->set('alert-message', 'This user is already a manager in this pharmacy.');
+    }
+
+    return $app->redirect('/pharmacy/'.$id);
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+;
+
+$app->get('/pharmacy/{id}/managers/{manager}/remove', function (Request $request, $id, $manager) use ($app) {
+    $params = $request->request->all();
+
+    $pharmacySearchConditions = ['_id' => new MongoId($id)];
+    $pharmacy = $app['db']->pharmacies->findOne($pharmacySearchConditions);
+
+    if (!$pharmacy) {
+        return $app->redirect('/');
+    }
+
+    $managerUsername = $manager;
+    $managerRecord = $app['db']->users->findOne(['username' => $managerUsername]);
+
+    if (!$managerRecord) {
+        return $app->redirect('/');
+    }
+
+    if (isset($pharmacy['managers'])) {
+        $k = array_search($managerUsername, $pharmacy['managers']);
+        unset($pharmacy['managers'][$k]);
+
+        $app['db']->pharmacies->findAndModify($pharmacySearchConditions, $pharmacy);
+
+        $app['session']->set('alert', 'success');
+        $app['session']->set('alert-message', 'Manager was successfully removed.');
+    }
+
+    return $app->redirect('/pharmacy/'.$id);
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+;
+
 
 $app->get('/pharmacy/{pharmacyId}/products/{productId}/order', function (Request $request, $pharmacyId, $productId) use ($app) {
     $pharmacySearchConditions = ['_id' => new MongoId($pharmacyId)];
@@ -389,7 +487,9 @@ $app->get('/pharmacy/{pharmacyId}/products/{productId}/order', function (Request
     $app['db']->pharmacies->findAndModify($pharmacySearchConditions, $pharmacy);
 
     return $app->redirect('/pharmacy/'.$pharmacyId);
-});
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+;
 
 $app->get('/pharmacy/{pharmacyId}/products/{productId}/buy', function (Request $request, $pharmacyId, $productId) use ($app) {
     $pharmacySearchConditions = ['_id' => new MongoId($pharmacyId)];
@@ -438,16 +538,12 @@ $app->get('/pharmacy/{pharmacyId}/products/{productId}/buy', function (Request $
     }
 
     return $app->redirect('/pharmacy/'.$pharmacyId);
-});
-
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+;
 
 // @route GET /users/add
 $app->get('/users/add', function (Request $request) use ($app) {
-    $isAdmin = @$app['twig']->getGlobals()['isadmin'];
-    if (!$isAdmin) {
-        return $app->redirect('/');
-    }
-
     $response = $app['twig']->render('users-add/index.html.twig', array(
         'username' => $request->get('username'),
         'alert' => $app['session']->get('alert'),
@@ -458,15 +554,13 @@ $app->get('/users/add', function (Request $request) use ($app) {
     $app['session']->remove('alert-message');
 
     return $response;
-});
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+->after($app['userRole.service']->getValidateRoleCallback(UserRoleService::ROLE_ADMIN))
+;
 
 // @route POST /users/add
 $app->post('/users/add', function (Request $request) use ($app) {
-    $isAdmin = @$app['twig']->getGlobals()['isadmin'];
-    if (!$isAdmin) {
-        return $app->redirect('/');
-    }
-
     $params = $request->request->all();
     $username = $request->get('username');
     $user = $app['db']->users->findOne(['username' => $username]);
@@ -484,7 +578,10 @@ $app->post('/users/add', function (Request $request) use ($app) {
     $app['session']->set('alert-message', 'Well done! You have successfully add a new user.');
 
     return $app->redirect('/users/add');
-});
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+->after($app['userRole.service']->getValidateRoleCallback(UserRoleService::ROLE_ADMIN))
+;
 
 // @route GET /users/manage
 $app->get('/users/manage', function (Request $request) use ($app) {
@@ -494,43 +591,58 @@ $app->get('/users/manage', function (Request $request) use ($app) {
     return $app['twig']->render('users-manage/index.html.twig', array(
         'users' => $users,
     ));
-});
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+;
 
 // @route GET /users/remove
 $app->get('/users/remove/{id}', function (Request $request, $id) use ($app) {
     $user = $app['db']->users->findOne(['_id' => new MongoId($id)]);
+    $userIsAdmin = $app['userRole.service']->validateUserRole($user, UserRoleService::ROLE_ADMIN);
 
-    if ($user['isadmin']) {
+    if ($userIsAdmin) {
         return $app->redirect('/users/manage');
     }
 
     $a = $app['db']->users->remove(['_id' => new MongoId($id)]);
     return $app->redirect('/users/manage');
-});
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+;
 
 // @route GET /users/add-manager-role
 $app->get('/users/add-manager-role/{id}', function (Request $request, $id) use ($app) {
     $user = $app['db']->users->findOne(['_id' => new MongoId($id)]);
+    $userIsAdmin = $app['userRole.service']->validateUserRole($user, UserRoleService::ROLE_ADMIN);
 
-    if ($user['isadmin']) {
+    if ($userIsAdmin) {
         return $app->redirect('/users/manage');
     }
 
-    $user['ismanager'] = true;
-    
+    if (empty($user['roles'])) {
+        $user['roles'] = array();
+    }
+    $user['roles'][] = UserRoleService::ROLE_MANAGER;
+
     $app['db']->users->findAndModify(['username' => $user['username']], $user);
 
     return $app->redirect('/users/manage');
-});
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+;
 
 // @route GET /users/remove-manager-role
 $app->get('/users/remove-manager-role/{id}', function (Request $request, $id) use ($app) {
     $user = $app['db']->users->findOne(['_id' => new MongoId($id)]);
-    unset($user['ismanager']);
+
+    $k = array_search(UserRoleService::ROLE_MANAGER, $user['roles']);
+    unset($user['roles'][$k]);
     
     $app['db']->users->findAndModify(['username' => $user['username']], $user);
 
     return $app->redirect('/users/manage');
-});
+})
+->after($app['userRole.service']->getAuthenticatedRoleCallback())
+;
 
 return $app;

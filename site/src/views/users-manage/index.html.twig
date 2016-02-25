@@ -23,19 +23,19 @@
         </thead>
         <tbody>
           {% for user in users %}
-          <tr {% if user.isadmin|default(false) %}class="danger"{% endif %} {% if user.ismanager|default(false) %}class="info"{% endif %}>
+          <tr {% if user.userIsAdmin|default(false) %}class="danger"{% endif %} {% if 'manager' in user.roles|default([]) %}class="info"{% endif %}>
             <td>{{ user.username }}</td>
             <td>{{ user.phone }}</td>
             <td>{{ user.firstname }} {{ user.lastname }}</td>
             <td>
-              {% if user.isadmin|default(false) %}admin&nbsp;{% endif %}
-              {% if user.ismanager|default(false) %}manager&nbsp;{% endif %}
+              {% if user.userIsAdmin|default(false) %}admin&nbsp;{% endif %}
+              {% if 'manager' in user.roles|default(false) %}manager&nbsp;{% endif %}
             </td>
             <td>
-              {% if not user.isadmin|default(false) %}
+              {% if not user.userIsAdmin|default(false) %}
                 <a href="/users/remove/{{ user._id }}" class="btn btn-xs btn-danger">Remove</a>
 
-                {% if user.ismanager|default(false) %}
+                {% if 'manager' in user.roles|default(false) %}
                   <a href="/users/remove-manager-role/{{ user._id }}" class="btn btn-xs btn-danger">Remove manager role</a>
                 {% else %}
                   <a href="/users/add-manager-role/{{ user._id }}" class="btn btn-xs btn-success">Add manager role</a>

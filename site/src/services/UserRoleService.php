@@ -6,32 +6,42 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class UserRoleService {
     const ROLE_ADMIN = 'admin';
+    const ROLE_MANAGER = 'manager';
     
     public function __construct(Application $app) {
         $this->app = $app;
     }
 
-    public function validateRole($role) {
-        $user = $this->app['user.service']->getAuthenticatedUser();
+    public function validateUserRole($user, $role) {
+        $hasRole = false;
         
         if ($user) {
-            var_dump(1);die;
+            $hasRole = in_array($role, $user['roles']);
         }
 
-        return $this->app->redirect('/login');
+        return $hasRole;
+    }
+
+    public function validateRole($role) {
+        $user = $this->app['user.service']->getAuthenticatedUser();
+        $hasRole = $this->validateUserRole($user, $role);
+
+        return $hasRole;
     }
 
     public function getValidateRoleCallback($role) {
         return function () use ($role) {
-            return true;
-            // return $this->validateRole($role);
+            if (false == $this->validateRole($role)) {
+                return $this->app->redirect('/');
+            }
         };
     }
 
     public function getAuthenticatedRoleCallback() {
         return function () {
-            return true;
-            // return $this->validateRole($role);
+            if (false == $this->app['user.service']->isAuthenticated()) {
+                return $this->app->redirect('/login');
+            }
         };
     }
 }

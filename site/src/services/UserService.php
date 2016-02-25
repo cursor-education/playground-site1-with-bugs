@@ -14,7 +14,11 @@ class UserService {
 
     public function getAuthenticatedUser() {
         $username = $this->app['session']->get('username');
-        $userRecord = $this->app['db']->users->findOne(['xusername' => $username]);
+        if (empty($username)) {
+            return null;
+        }
+
+        $userRecord = $this->app['db']->users->findOne(['username' => $username]);
 
         return $userRecord;
     }
